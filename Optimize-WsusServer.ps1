@@ -367,7 +367,8 @@ function Confirm-Prompt ($prompt) {
 
     if ($confirm.ToLower() -eq 'y') {
         return $true
-    } else {
+    }
+    else {
         return $false
     }
 }
@@ -577,7 +578,7 @@ function Get-WsusIISConfig {
 function Get-WsusIISLocalizedNamespacePath {
     # Get localized WSUS IIS web site path: https://docs.microsoft.com/fr-fr/security-updates/windowsupdateservices/18127277 - Document is in English but posted in the French docs
     $iisSitePhysicalPath = Get-ItemPropertyValue -Path 'HKLM:\SOFTWARE\Microsoft\Update Services\Server\Setup\' -Name "TargetDir"
-    $iisLocalizedString = Get-Website | Where-Object {$($_.PhysicalPath).StartsWith($iisSitePhysicalPath)} | Select-Object -ExpandProperty Name
+    $iisLocalizedString = Get-Website | Where-Object { $($_.PhysicalPath).StartsWith($iisSitePhysicalPath) } | Select-Object -ExpandProperty Name
     $iisLocalizedNamespacePath = "IIS:\Sites\$iisLocalizedString\ClientWebService"
     return $iisLocalizedNamespacePath
 }
@@ -698,7 +699,7 @@ function Update-WsusIISConfig ($settingKey, $recommendedValue) {
     Write-Host "Updated IIS Setting: $settingKey, $recommendedValue" -BackgroundColor Green -ForegroundColor Black
 }
 
-function Remove-Updates ($searchStrings, $updateProp, $force=$false) {
+function Remove-Updates ($searchStrings, $updateProp, $force = $false) {
     [reflection.assembly]::LoadWithPartialName("Microsoft.UpdateServices.Administration") | Out-Null
     $wsusServer = [Microsoft.UpdateServices.Administration.AdminProxy]::GetUpdateServer();
     $scope = New-Object Microsoft.UpdateServices.Administration.UpdateScope
@@ -715,16 +716,15 @@ function Remove-Updates ($searchStrings, $updateProp, $force=$false) {
 
     Write-Host "Update Property: $updateProp"
 
-    foreach ($searchString in $searchStrings)
-    {
+    foreach ($searchString in $searchStrings) {
         $confirm = $false
         Write-Host " - Update Search: $searchString"
         $searchCount = 0
-        foreach ($update in $updates){
-            if ($update.$($updateProp) -match "$searchString"){
-                if($update.IsApproved){
+        foreach ($update in $updates) {
+            if ($update.$($updateProp) -match "$searchString") {
+                if ($update.IsApproved) {
 
-                    if ($force){
+                    if ($force) {
                         $update.Decline()
                     }
                     $searchCount = $searchCount + 1
@@ -735,12 +735,13 @@ function Remove-Updates ($searchStrings, $updateProp, $force=$false) {
 
         if ($searchCount -gt 0) {
             Write-Host "$searchCount `"$searchString`" Updates $userMsg!" -ForegroundColor "Blue" -BackgroundColor White
-        } else {
+        }
+        else {
             Write-Host "      $searchCount `"$searchString`" Updates $userMsg" -ForegroundColor "White"
         }
 
         #Prompt user to confirm declining updates. Do no prompt if force flag is enable to prevent loop
-        if ((-not $force) -and ($searchCount -ne 0)){
+        if ((-not $force) -and ($searchCount -ne 0)) {
             $confirm = Confirm-Prompt "Are you sure you want to decline all ($searchCount) listed ($searchString) updates?"
 
             if ($confirm) {
@@ -748,7 +749,7 @@ function Remove-Updates ($searchStrings, $updateProp, $force=$false) {
             }
         }
 
-        if (($confirm) -or $force){
+        if (($confirm) -or $force) {
             $declinedCount = ($declinedCount + $searchCount)
         }
     }
@@ -824,8 +825,8 @@ function Disable-WsusDriverSync {
     https://docs.microsoft.com/en-us/powershell/module/updateservices/set-wsusclassification?view=win10-ps
     #>
 
-    Get-WsusClassification | Where-Object -FilterScript {$_.Classification.Title -Eq "Drivers"} | Set-WsusClassification -Disable
-    Get-WsusClassification | Where-Object -FilterScript {$_.Classification.Title -Eq "Driver Sets"} | Set-WsusClassification -Disable
+    Get-WsusClassification | Where-Object -FilterScript { $_.Classification.Title -Eq "Drivers" } | Set-WsusClassification -Disable
+    Get-WsusClassification | Where-Object -FilterScript { $_.Classification.Title -Eq "Driver Sets" } | Set-WsusClassification -Disable
 }
 
 
@@ -915,7 +916,7 @@ function Set-FileAclPermissions ($file, $accString, $rights, $inheritanceFlags, 
     Set-Acl -Path $file -AclObject $acl
 }
 
-function Decline-SupersededUpdates ($verbose){
+function Decline-SupersededUpdates ($verbose) {
     <#
     .SYNOPSIS
     Declines approved updates that have been approved and are superseded by other updates.
@@ -940,12 +941,11 @@ function Decline-SupersededUpdates ($verbose){
     $scope.ApprovedStates = "LatestRevisionApproved"
     $updates = $wsusServer.GetUpdates($scope)
 
-    foreach ($update in $updates){
+    foreach ($update in $updates) {
         $updatesThatSupersede = $update.GetRelatedUpdates("UpdatesThatSupersedeThisUpdate")
-        if($updatesThatSupersede.Count -gt 0) {
-            foreach ($super in $updatesThatSupersede)
-            {
-                if ($super.IsApproved){
+        if ($updatesThatSupersede.Count -gt 0) {
+            foreach ($super in $updatesThatSupersede) {
+                if ($super.IsApproved) {
                     $update.Decline()
                     $declineCount++
                     break
@@ -954,9 +954,10 @@ function Decline-SupersededUpdates ($verbose){
         }
     }
 
-    if($verbose) {
+    if ($verbose) {
         Write-Host "Osbolete Updates Declined: $declineCount"
-    } else {
+    }
+    else {
         return $declineCount
     }
 }
@@ -964,11 +965,11 @@ function Decline-SupersededUpdates ($verbose){
 $iisPath = Get-WsusIISLocalizedNamespacePath
 
 # Check commandline parameters.
-switch($true) {
+switch ($true) {
     ($FirstRun) {
         Write-Host "All of the following processes are highly recommended!" -ForegroundColor Blue -BackgroundColor White
 
-        switch($true) {
+        switch ($true) {
             (Confirm-Prompt "Run WSUS IIS configuration optimization?") {
                 $wsusIISConfig = Get-WsusIISConfig
                 Test-WsusIISConfig $wsusIISConfig $recommendedIISSettings
