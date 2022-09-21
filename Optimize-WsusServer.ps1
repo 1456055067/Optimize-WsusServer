@@ -387,9 +387,9 @@ function Optimize-WsusUpdates {
 
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory = $false)]
-        []
-        $updateServer = "localhost"
+        [Parameter(Mandatory = $true)]
+        [System.MarshalByRefObject]
+        $updateServer
     )
 
     Write-Host "Deleting obsolete computers from WSUS database"
