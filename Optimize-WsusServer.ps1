@@ -385,23 +385,30 @@ function Optimize-WsusUpdates {
     https://docs.microsoft.com/en-us/powershell/scripting/developer/help/examples-of-comment-based-help?view=powershell-7
     #>
 
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $false)]
+        []
+        $updateServer = "localhost"
+    )
+
     Write-Host "Deleting obsolete computers from WSUS database"
-    Invoke-WsusServerCleanup -CleanupObsoleteComputers
+    Invoke-WsusServerCleanup -CleanupObsoleteComputers -UpdateServer $updateServer
 
     Write-Host "Deleting obsolete updates"
-    Invoke-WsusServerCleanup -CleanupObsoleteUpdates
+    Invoke-WsusServerCleanup -CleanupObsoleteUpdates -UpdateServer $updateServer
 
     Write-Host "Deleting unneeded content files"
-    Invoke-WsusServerCleanup -CleanupUnneededContentFiles
+    Invoke-WsusServerCleanup -CleanupUnneededContentFiles -UpdateServer $updateServer
 
     Write-Host "Deleting obsolete update revisions"
-    Invoke-WsusServerCleanup -CompressUpdates
+    Invoke-WsusServerCleanup -CompressUpdates -UpdateServer $updateServer
 
     Write-Host "Declining expired updates"
-    Invoke-WsusServerCleanup -DeclineExpiredUpdates
+    Invoke-WsusServerCleanup -DeclineExpiredUpdates -UpdateServer $updateServer
 
     Write-Host "Declining superceded updates"
-    Invoke-WsusServerCleanup -DeclineSupersededUpdates
+    Invoke-WsusServerCleanup -DeclineSupersededUpdates -UpdateServer $updateServer
 
     Write-Host "Declining additional superceded updates"
     Decline-SupersededUpdates $TRUE
